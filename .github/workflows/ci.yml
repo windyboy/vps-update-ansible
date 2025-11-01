@@ -51,7 +51,11 @@ jobs:
         distro:
           - debian-bullseye
           - ubuntu-jammy
-          - rockylinux-8
+        include:
+          - distro: debian-bullseye
+            platform: debian-11-bullseye
+          - distro: ubuntu-jammy
+            platform: ubuntu-2204-jammy
     
     steps:
       - name: Checkout code
@@ -70,7 +74,7 @@ jobs:
       - name: Run Molecule tests
         run: |
           cd roles/system_update
-          molecule test
+          molecule test --platform-name ${{ matrix.platform }}
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

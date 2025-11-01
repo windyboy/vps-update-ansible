@@ -1,0 +1,16 @@
+# Example Ansible Inventory File
+# Copy this file to inventory.ini and customize it for your servers
+
+[debian]
+# debian-server.example.com ansible_user=your_username
+# us1.example.com ansible_user=your_username
+
+[redhat]
+# centos-server.example.com ansible_user=your_username
+# rhel-server.example.com ansible_user=your_username
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+# ansible_ssh_private_key_file=~/.ssh/your_key
+# ansible_become_password='{{ vault_become_password }}'
+

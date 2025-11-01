@@ -1,0 +1,81 @@
+---
+# Pre-flight safety checks before system updates
+# These checks help prevent update failures due to insufficient resources
+
+- name: Check available disk space on root partition
+  # Why shell: ansible.builtin.stat doesn't provide disk space info
+  # Command breakdown: df -m (MB units) | tail -1 (data line only) | awk (extract available column)
+  ansible.builtin.shell: df -m / | tail -1 | awk '{print $4}'
+  register: root_free_space_mb
+  changed_when: false
+  check_mode: false
+  tags: precheck
+
+- name: Check available disk space on /var
+  # /var needs space for APT cache and package downloads
+  ansible.builtin.shell: df -m /var | tail -1 | awk '{print $4}'
+  register: var_free_space_mb
+  changed_when: false
+  check_mode: false
+  tags: precheck
+
+- name: Fail if insufficient disk space
+  ansible.builtin.fail:
+    msg: |
+      ❌ Insufficient disk space for safe updates
+      
+      Current status:
+        / partition:    {{ root_free_space_mb.stdout }} MB available
+        /var partition: {{ var_free_space_mb.stdout }} MB available
+      
+      Required: {{ system_update_min_free_space_mb | default(1024) }} MB per partition
+      
+      Why: APT needs space for downloading packages and unpacking files.
+            Insufficient space can cause partial updates and system instability.
+      
+      💡 Actions you can take:
+        1. Clean APT cache: sudo apt-get clean
+        2. Remove old packages: sudo apt-get autoremove
+        3. Check large files: sudo du -sh /var/* | sort -h
+        4. Increase disk space or adjust 'system_update_min_free_space_mb' variable
+  when: >
+    (root_free_space_mb.stdout | int) < (system_update_min_free_space_mb | default(1024)) or
+    (var_free_space_mb.stdout | int) < (system_update_min_free_space_mb | default(1024))
+  tags: precheck
+
+- name: Check if dpkg/apt is locked
+  ansible.builtin.shell: lsof /var/lib/dpkg/lock-frontend 2>/dev/null || true
+  register: dpkg_lock_check
+  changed_when: false
+  check_mode: false
+  tags: precheck
+
+- name: Wait for dpkg lock to be released
+  # APT/dpkg can be locked by unattended-upgrades or other processes
+  # Wait up to 5 minutes for the lock to be released before failing
+  ansible.builtin.wait_for:
+    path: /var/lib/dpkg/lock-frontend
+    state: absent
+    timeout: 300
+  when: dpkg_lock_check.stdout != ""
+  tags: precheck
+
+- name: Check for held packages
+  ansible.builtin.shell: dpkg --get-selections | grep 'hold$' || true
+  register: held_packages
+  changed_when: false
+  check_mode: false
+  tags: precheck
+
+- name: Display held packages (if any)
+  ansible.builtin.debug:
+    msg: "The following packages are held and will not be updated: {{ held_packages.stdout_lines }}"
+  when: held_packages.stdout_lines | length > 0
+  tags: precheck
+
+- name: Check APT sources validity
+  ansible.builtin.command: apt-get check
+  changed_when: false
+  check_mode: false
+  tags: precheck
+

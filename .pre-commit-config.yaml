@@ -1,0 +1,55 @@
+# Pre-commit hooks for code quality
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+      - id: end-of-file-fixer
+        name: Fix end of files
+      - id: check-yaml
+        name: Check YAML syntax
+        args: [--allow-multiple-documents]
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: mixed-line-ending
+        name: Check line endings
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        name: Lint YAML files
+        args: [-c=.yamllint]
+
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v6.22.1
+    hooks:
+      - id: ansible-lint
+        name: Lint Ansible files
+        files: \.(yaml|yml)$
+        exclude: ^\.github/
+
+  - repo: local
+    hooks:
+      - id: ansible-syntax-check
+        name: Ansible syntax check
+        entry: ansible-playbook
+        language: system
+        files: playbooks/.*\.yml$
+        args: [--syntax-check]
+        pass_filenames: true
+
+      - id: check-commit-message
+        name: Check commit message quality
+        entry: bash -c 'if ! grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf)(\(.+\))?: .{10,}" "$1"; then echo "❌ Commit message must follow format: type(scope): description"; exit 1; fi'
+        language: system
+        stages: [commit-msg]
+        always_run: true
+

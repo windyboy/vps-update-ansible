@@ -1,0 +1,54 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+  
+  tasks:
+    - name: Check if package cache was updated (Debian/Ubuntu)
+      ansible.builtin.stat:
+        path: /var/lib/apt/lists
+      register: apt_cache
+      when: ansible_facts.os_family == "Debian"
+      
+    - name: Verify apt cache exists
+      ansible.builtin.assert:
+        that:
+          - apt_cache.stat.exists
+        fail_msg: "APT cache does not exist"
+        success_msg: "APT cache exists"
+      when: ansible_facts.os_family == "Debian"
+      
+    - name: Check if yum/dnf cache exists (RedHat)
+      ansible.builtin.stat:
+        path: /var/cache/yum
+      register: yum_cache
+      when:
+        - ansible_facts.os_family == "RedHat"
+        - ansible_facts.distribution_major_version | int < 8
+        
+    - name: Check if dnf cache exists (RedHat 8+)
+      ansible.builtin.stat:
+        path: /var/cache/dnf
+      register: dnf_cache
+      when:
+        - ansible_facts.os_family == "RedHat"
+        - ansible_facts.distribution_major_version | int >= 8
+        
+    - name: Verify package manager cache exists (RedHat)
+      ansible.builtin.assert:
+        that:
+          - (yum_cache.stat.exists | default(false)) or (dnf_cache.stat.exists | default(false))
+        fail_msg: "Package manager cache does not exist"
+        success_msg: "Package manager cache exists"
+      when: ansible_facts.os_family == "RedHat"
+      
+    - name: Verify system is accessible after updates
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+      
+    - name: Display uptime
+      ansible.builtin.debug:
+        msg: "System uptime: {{ uptime_result.stdout }}"
+

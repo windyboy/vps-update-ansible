@@ -1,0 +1,32 @@
+---
+galaxy_info:
+  role_name: system_update
+  author: windy
+  description: Ansible role to update and optionally reboot VPS servers across different distributions
+  company: ""
+  
+  license: MIT
+  
+  min_ansible_version: "2.10"
+  
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+  
+  galaxy_tags:
+    - system
+    - updates
+    - maintenance
+    - security
+    - automation
+
+dependencies: []
+

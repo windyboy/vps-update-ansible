@@ -1,0 +1,111 @@
+---
+# =============================================================================
+# Default variables for system_update role
+# =============================================================================
+# This role is designed exclusively for Debian/Ubuntu systems.
+# All variables have sensible defaults and can be overridden in:
+#   - group_vars/
+#   - host_vars/
+#   - playbook --extra-vars
+#
+# Documentation: roles/system_update/README.md
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# APT Package Manager Configuration
+# -----------------------------------------------------------------------------
+
+# How long (in seconds) to consider APT cache as valid before refreshing
+# Reduces unnecessary cache updates when running multiple times in short succession
+system_update_cache_valid_time: 3600
+
+# Force using apt-get instead of aptitude (recommended for automation)
+# apt-get has more predictable behavior in scripts
+system_update_force_apt_get: true
+
+# -----------------------------------------------------------------------------
+# Reboot Strategy
+# -----------------------------------------------------------------------------
+
+# Automatically reboot if /var/run/reboot-required exists after updates
+# Set to false to manually control reboots
+system_update_auto_reboot: true
+
+# Maximum time (seconds) to wait for system to come back after reboot
+# Most systems complete reboot in 60-120 seconds
+system_update_reboot_timeout: 600
+
+# Wait time (seconds) after reboot before considering system ready
+# Gives services time to start
+system_update_post_reboot_delay: 30
+
+# -----------------------------------------------------------------------------
+# Batch Control (Playbook Level)
+# -----------------------------------------------------------------------------
+# These variables control how many servers update simultaneously
+
+# Size of each batch: number (e.g., 3) or percentage (e.g., "25%")
+# Smaller batches = safer but slower; larger = faster but riskier
+update_serial_batch: "25%"
+
+# Maximum allowed failure percentage before aborting entire update
+# If 10% of servers fail, remaining batches won't run
+update_max_fail_percentage: 10
+
+# -----------------------------------------------------------------------------
+# Pre-Flight Safety Checks
+# -----------------------------------------------------------------------------
+
+# Enable comprehensive checks before starting updates
+# Checks: disk space, APT locks, package manager health
+system_update_pre_check_enabled: true
+
+# Minimum required free space (MB) on / and /var partitions
+# APT needs space for downloads, unpacking, and old package cleanup
+system_update_min_free_space_mb: 1024
+
+# -----------------------------------------------------------------------------
+# Reporting & Notifications
+# -----------------------------------------------------------------------------
+
+# Generate JSON report with update results
+system_update_report_enabled: false
+
+# Path where JSON report will be saved (on target hosts)
+# Uses Ansible date_time fact for unique naming
+system_update_report_file: "/var/log/ansible-update-{{ ansible_date_time.date }}.json"
+
+# Send webhook notification after update completes
+system_update_notify_enabled: false
+
+# Webhook URL (Matrix, Slack, Discord, etc.)
+# Leave empty if notifications are disabled
+system_update_notify_webhook: ""
+
+# -----------------------------------------------------------------------------
+# Advanced Safety Options
+# -----------------------------------------------------------------------------
+
+# Number of old kernels to keep for rollback capability
+# Debian/Ubuntu typically keep 2-3 automatically
+system_update_keep_old_kernels: 2
+
+# DPKG options for handling configuration file conflicts
+# force-confdef: Use default answer when possible
+# force-confold: Keep your currently-installed config files
+system_update_dpkg_options: "force-confdef,force-confold"
+
+# -----------------------------------------------------------------------------
+# Package Hold Management (Optional)
+# -----------------------------------------------------------------------------
+
+# List of packages to prevent from updating
+# Useful for pinning specific versions of critical software
+system_update_packages_hold: []
+
+# Example - hold Docker and PostgreSQL:
+# system_update_packages_hold:
+#   - docker-ce
+#   - postgresql-15
+#   - nginx
+

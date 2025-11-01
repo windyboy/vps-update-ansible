@@ -1,0 +1,37 @@
+# Ansible
+*.retry
+.vault_pass
+.vault_password
+
+# Sensitive inventory files
+inventory.ini
+host_vars/
+group_vars/all/vault.yml
+
+# Molecule
+.molecule/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+

@@ -1,0 +1,37 @@
+---
+- name: Update Debian/Ubuntu VPS servers
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: "{{ update_serial_batch | default('25%') }}"
+  max_fail_percentage: 10
+  
+  pre_tasks:
+    - name: Verify all hosts are Debian-based
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == "Debian"
+        fail_msg: "This playbook only supports Debian/Ubuntu systems"
+      tags: always
+    
+    - name: Display batch information
+      ansible.builtin.debug:
+        msg: |
+          Processing {{ ansible_play_batch | length }} hosts in this batch
+          Total hosts: {{ ansible_play_hosts | length }}
+          Hosts in batch: {{ ansible_play_batch }}
+      run_once: true
+      tags: always
+
+  roles:
+    - role: system_update
+      
+  post_tasks:
+    - name: Wait for system to be ready after reboot
+      ansible.builtin.wait_for_connection:
+        # Wait up to 5 minutes for server reboot (most systems complete in 1-2 minutes)
+        timeout: 300
+        # Delay 10 seconds before checking to give system boot time
+        delay: 10
+      when: system_update_auto_reboot | default(true) | bool
+      tags: reboot

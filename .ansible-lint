@@ -1,0 +1,35 @@
+---
+# Ansible Lint Configuration
+
+# List of rules to skip
+skip_list:
+  - package-latest  # We intentionally use latest for system updates
+  - no-handler  # We use direct tasks for reboot which is acceptable
+
+# Exclude paths
+exclude_paths:
+  - .cache/
+  - .molecule/
+  - venv/
+
+# Enable progressive mode (warn on new issues)
+progressive: false
+
+# Use specific Ansible version for linting
+# ansible_version: "2.10"
+
+# Output format: simple, rich, json, codeclimate
+# format: rich
+
+# Warn about command usage
+warn_list:
+  - command-instead-of-module
+  - command-instead-of-shell
+  - deprecated-command-syntax
+
+# Rules to enforce
+enable_list:
+  - yaml
+  - name[template]
+  - name[casing]
+

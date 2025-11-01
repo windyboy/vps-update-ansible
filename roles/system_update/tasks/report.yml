@@ -1,0 +1,62 @@
+---
+- name: Generate update report
+  ansible.builtin.copy:
+    content: |
+      {
+        "hostname": "{{ ansible_hostname }}",
+        "fqdn": "{{ ansible_fqdn }}",
+        "os": "{{ ansible_distribution }} {{ ansible_distribution_version }}",
+        "update_time": "{{ ansible_date_time.iso8601 }}",
+        "packages_updated": {{ upgrade_result.changed | default(false) }},
+        "reboot_required": {{ reboot_required.stat.exists | default(false) }},
+        "reboot_performed": {{ ((system_update_auto_reboot | default(false)) and (reboot_required.stat.exists | default(false))) }},
+        "packages_requiring_reboot": {{ reboot_packages.stdout_lines | default([]) | to_json }}
+      }
+    dest: "{{ system_update_report_file }}"
+    mode: '0644'
+  when: system_update_report_file is defined
+  tags: report
+
+- name: Send notification to webhook
+  ansible.builtin.uri:
+    url: "{{ system_update_notify_webhook }}"
+    method: POST
+    body_format: json
+    body:
+      text: "✅ Update completed on {{ ansible_hostname }}"
+      hostname: "{{ ansible_hostname }}"
+      fqdn: "{{ ansible_fqdn }}"
+      os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+      updated: "{{ upgrade_result.changed | default(false) }}"
+      rebooted: "{{ ((system_update_auto_reboot | default(false)) and (reboot_required.stat.exists | default(false))) }}"
+      timestamp: "{{ ansible_date_time.iso8601 }}"
+    status_code: [200, 201, 204]
+    timeout: 30
+  when:
+    - system_update_notify_enabled | default(false) | bool
+    - system_update_notify_webhook is defined
+    - system_update_notify_webhook | length > 0
+  delegate_to: localhost
+  run_once: false
+  register: webhook_result
+  failed_when: false  # Don't fail the entire playbook if notification fails
+  tags: notify
+
+- name: Log webhook notification failure
+  ansible.builtin.debug:
+    msg: |
+      ⚠️ Warning: Failed to send webhook notification
+      
+      Error: {{ webhook_result.msg | default('Unknown error') }}
+      URL: {{ system_update_notify_webhook }}
+      
+      💡 Troubleshooting:
+        - Check webhook URL is correct and accessible
+        - Verify network connectivity from Ansible control node
+        - Check webhook service status and rate limits
+        - Review webhook service logs for details
+  when:
+    - webhook_result is defined
+    - webhook_result.failed | default(false)
+  tags: notify
+

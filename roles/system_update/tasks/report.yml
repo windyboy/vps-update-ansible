@@ -9,7 +9,10 @@
         "update_time": "{{ ansible_date_time.iso8601 }}",
         "packages_updated": {{ upgrade_result.changed | default(false) }},
         "reboot_required": {{ reboot_required.stat.exists | default(false) }},
-        "reboot_performed": {{ ((system_update_auto_reboot | default(false)) and (reboot_required.stat.exists | default(false))) }},
+        "reboot_performed": {{
+          ((system_update_auto_reboot | default(false)) and
+           (reboot_required.stat.exists | default(false)))
+        }},
         "packages_requiring_reboot": {{ reboot_packages.stdout_lines | default([]) | to_json }}
       }
     dest: "{{ system_update_report_file }}"
@@ -28,7 +31,9 @@
       fqdn: "{{ ansible_fqdn }}"
       os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
       updated: "{{ upgrade_result.changed | default(false) }}"
-      rebooted: "{{ ((system_update_auto_reboot | default(false)) and (reboot_required.stat.exists | default(false))) }}"
+      rebooted: >-
+        {{ ((system_update_auto_reboot | default(false)) and
+            (reboot_required.stat.exists | default(false))) }}
       timestamp: "{{ ansible_date_time.iso8601 }}"
     status_code: [200, 201, 204]
     timeout: 30
@@ -46,10 +51,10 @@
   ansible.builtin.debug:
     msg: |
       ⚠️ Warning: Failed to send webhook notification
-      
+
       Error: {{ webhook_result.msg | default('Unknown error') }}
       URL: {{ system_update_notify_webhook }}
-      
+
       💡 Troubleshooting:
         - Check webhook URL is correct and accessible
         - Verify network connectivity from Ansible control node
@@ -59,4 +64,3 @@
     - webhook_result is defined
     - webhook_result.failed | default(false)
   tags: notify
-

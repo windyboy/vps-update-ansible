@@ -5,7 +5,7 @@
   gather_facts: true
   serial: "{{ update_serial_batch | default('25%') }}"
   max_fail_percentage: 10
-  
+
   pre_tasks:
     - name: Verify all hosts are Debian-based
       ansible.builtin.assert:
@@ -13,7 +13,7 @@
           - ansible_facts.os_family == "Debian"
         fail_msg: "This playbook only supports Debian/Ubuntu systems"
       tags: always
-    
+
     - name: Display batch information
       ansible.builtin.debug:
         msg: |
@@ -25,7 +25,7 @@
 
   roles:
     - role: system_update
-      
+
   post_tasks:
     - name: Wait for system to be ready after reboot
       ansible.builtin.wait_for_connection:

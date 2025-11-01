@@ -40,19 +40,6 @@ system_update_reboot_timeout: 600
 system_update_post_reboot_delay: 30
 
 # -----------------------------------------------------------------------------
-# Batch Control (Playbook Level)
-# -----------------------------------------------------------------------------
-# These variables control how many servers update simultaneously
-
-# Size of each batch: number (e.g., 3) or percentage (e.g., "25%")
-# Smaller batches = safer but slower; larger = faster but riskier
-update_serial_batch: "25%"
-
-# Maximum allowed failure percentage before aborting entire update
-# If 10% of servers fail, remaining batches won't run
-update_max_fail_percentage: 10
-
-# -----------------------------------------------------------------------------
 # Pre-Flight Safety Checks
 # -----------------------------------------------------------------------------
 
@@ -108,4 +95,3 @@ system_update_packages_hold: []
 #   - docker-ce
 #   - postgresql-15
 #   - nginx
-

@@ -9,4 +9,3 @@ update_cache_timeout: 3600
 
 # Packages to always exclude from updates (can be overridden)
 default_excluded_packages: []
-

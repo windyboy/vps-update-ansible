@@ -5,6 +5,9 @@
 skip_list:
   - package-latest  # We intentionally use latest for system updates
   - no-handler  # We use direct tasks for reboot which is acceptable
+  - var-naming[no-role-prefix]  # Playbook-level vars and register vars don't need role prefix
+  - run-once[play]  # run_once is safe in our linear strategy
+  - command-instead-of-module  # Some checks require shell commands
 
 # Exclude paths
 exclude_paths:
@@ -15,16 +18,11 @@ exclude_paths:
 # Enable progressive mode (warn on new issues)
 progressive: false
 
-# Use specific Ansible version for linting
-# ansible_version: "2.10"
-
-# Output format: simple, rich, json, codeclimate
+# Output format
 # format: rich
 
 # Warn about command usage
 warn_list:
-  - command-instead-of-module
-  - command-instead-of-shell
   - deprecated-command-syntax
 
 # Rules to enforce

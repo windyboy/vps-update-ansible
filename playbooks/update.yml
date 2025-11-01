@@ -23,6 +23,24 @@
       run_once: true
       tags: always
 
+    - name: Ensure python3-apt is installed
+      ansible.builtin.raw: |
+        if ! dpkg -l python3-apt 2>/dev/null | grep -q '^ii'; then
+          apt-get update && apt-get install -y python3-apt
+        fi
+      register: python3_apt_install
+      changed_when: "'Setting up python3-apt' in python3_apt_install.stdout"
+      tags: always
+
+    - name: Ensure lsof is installed
+      ansible.builtin.raw: |
+        if ! command -v lsof >/dev/null 2>&1; then
+          apt-get update && apt-get install -y lsof
+        fi
+      register: lsof_install
+      changed_when: "'Setting up lsof' in lsof_install.stdout"
+      tags: always
+
   roles:
     - role: system_update
 

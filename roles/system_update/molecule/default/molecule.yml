@@ -63,6 +63,8 @@ platforms:
 
 provisioner:
   name: ansible
+  env:
+    ANSIBLE_ALLOW_BROKEN_CONDITIONALS: "True"
   config_options:
     defaults:
       callbacks_enabled: profile_tasks,timer

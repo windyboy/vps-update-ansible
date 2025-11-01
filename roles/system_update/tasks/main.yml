@@ -1,4 +1,12 @@
 ---
+- name: Verify OS family
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.os_family == "Debian"
+    fail_msg: "This role only supports Debian/Ubuntu systems. Detected OS family: {{ ansible_facts.os_family }}"
+    success_msg: "OS family check passed: {{ ansible_facts.os_family }}"
+  tags: always
+
 - name: Include pre-checks
   ansible.builtin.include_tasks: precheck.yml
   when: system_update_pre_check_enabled | default(true) | bool

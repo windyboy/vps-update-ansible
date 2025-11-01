@@ -4,11 +4,11 @@ galaxy_info:
   author: windy
   description: Ansible role to update and optionally reboot VPS servers across different distributions
   company: ""
-  
+
   license: MIT
-  
+
   min_ansible_version: "2.10"
-  
+
   platforms:
     - name: Debian
       versions:
@@ -20,7 +20,7 @@ galaxy_info:
         - focal
         - jammy
         - noble
-  
+
   galaxy_tags:
     - system
     - updates
@@ -29,4 +29,3 @@ galaxy_info:
     - automation
 
 dependencies: []
-

@@ -3,9 +3,8 @@
   hosts: all
   become: true
   gather_facts: true
-  
+
   tasks:
     - name: Include system_update role
       ansible.builtin.include_role:
         name: system_update
-

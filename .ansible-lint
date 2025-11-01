@@ -7,6 +7,7 @@ skip_list:
   - no-handler  # We use direct tasks for reboot which is acceptable
   - var-naming[no-role-prefix]  # Playbook-level vars and register vars don't need role prefix
   - run-once[play]  # run_once is safe in our linear strategy
+  - run-once[task]  # run_once task is safe with our linear strategy
   - command-instead-of-module  # Some checks require shell commands
 
 # Exclude paths
@@ -30,4 +31,3 @@ enable_list:
   - yaml
   - name[template]
   - name[casing]
-
